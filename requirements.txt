@@ -1,3 +1,9 @@
+black==22.8.0
+flake8==5.0.4
+opencv-python==4.6.0.66
+onnxruntime==1.11.0
+numpy==1.22.3
+torch==1.11.0
 clearml==1.7.0
 pydantic-yaml==0.8.0
 pillow==9.2.0
