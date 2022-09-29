@@ -1,0 +1,19 @@
+# data
+dataset_path: .
+dataset_output_path: ./dataset
+training_dataset_path: ./dataset
+valid_dataset_path: ./dataset
+people_dataset_path: ./dataset
+mask_dataset_path: ./dataset
+dataset_id: str
+dataset_version: 0.0.1
+
+#model
+lr: 0.001
+momentum: 0.9
+num_epochs: 1
+model_path: ../models
+
+# validation
+val_iou_threshold: 0.90
+val_loss_threshold: 0.2
