@@ -18,12 +18,13 @@ class AppConfig(YamlModel):
     lr: float
     momentum: float
     num_epochs: int
+    model_path: str
     # validation
-    val_acc_threshold: float
+    val_iou_threshold: float
     val_loss_threshold: float
 
     @classmethod
-    def parse_raw(cls, filename: Union[str, Path] = "D:/иван/MLOps/MLOps/config.yaml", *args, **kwargs):  # noqa: E501
+    def parse_raw(cls, filename: Union[str, Path] = "../config/config.yaml", *args, **kwargs):  # noqa: E501
         with open(filename, 'r') as f:
             data = f.read()
         return super().parse_raw(data, *args, **kwargs)

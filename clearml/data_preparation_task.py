@@ -11,9 +11,9 @@ def main():
         task_name="data_preparation",
         task_type=TaskTypes.data_processing,
     )
-    # clearml_params = {
-    #    "dataset_id": '617f60ea548943149a09b737acb9d674'
-    # }
+    #clearml_params = {
+     #   "dataset_id": '617f60ea548943149a09b737acb9d674'
+     #}
     clearml_params = {"dataset_id": config.dataset_id}
     task.connect(clearml_params)
     dataset_path = Dataset.get(**clearml_params).get_local_copy()

@@ -19,9 +19,9 @@ def main():
         task_type=TaskTypes.training,
     )
 
-    # clearml_params = {
-    #   "dataset_id": config.dataset_id
-    # }
+   # clearml_params = {
+     #  "dataset_id": '229323f5df02460fbc0cacffbee9a351'
+     #}
     clearml_params = config.dict()
     task.connect(clearml_params)
     dataset_path = Dataset.get(clearml_params["dataset_id"]).get_local_copy()
@@ -32,7 +32,8 @@ def main():
     config.mask_dataset_path = mask_path
     # print(config.people_dataset_path['val'],"  TASK")
     # print(config.dataset_id,"   DATASET_ID_TRAIN_TASK")
-    main_actions(config=config)
+    model_path = main_actions(config=config)
+    task.upload_artifact(name="onnx_model", artifact_object=model_path)
 
 
 if __name__ == "__main__":

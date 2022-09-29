@@ -2,14 +2,19 @@ import random as r
 import cv2
 import torch
 import segmentation_models_pytorch as smp
+from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from src.create_dataset import CustomDataset
 from src.utils import from_tensor_to_numpy, visualize
 from src.model import model_DeepLabV3
 from config.config import AppConfig
+from datetime import datetime
 
 
 def main_actions(config: AppConfig):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    writer = SummaryWriter("../tensorbord/result_{}".format(timestamp))
+
     x_train_dir = str(config.people_dataset_path["train"])
     y_train_dir = str(config.mask_dataset_path["train"])
     x_val_dir = str(config.people_dataset_path["val"])
@@ -20,13 +25,13 @@ def main_actions(config: AppConfig):
     image, mask = dataset[random_idx]
 
     image_arr, mask_arr = from_tensor_to_numpy(image, mask)
-
+    '''
     visualize(
         original_image=image_arr,
         ground_truth_mask=(mask_arr),
         binar_mask=cv2.threshold(mask_arr, 0.5, 255, cv2.THRESH_BINARY)[1],
     )
-
+    '''
     # create segmentation model with pretrained encoder
     ENCODER = "resnet50"
     ENCODER_WEIGHTS = "imagenet"
@@ -93,14 +98,14 @@ def main_actions(config: AppConfig):
         verbose=True,
     )
 
-    train_model(
-        model, train_epoch, valid_epoch, train_loader, valid_loader, EPOCHS
+    model_path = train_model(
+        model, train_epoch, valid_epoch, train_loader, valid_loader, EPOCHS,config.model_path,writer
     )  # noqa: E501
+    return model_path
 
 
 def train_model(
-    model, train_epoch, valid_epoch, train_loader, valid_loader, epochs
-):  # noqa: E501
+    model, train_epoch, valid_epoch, train_loader, valid_loader, epochs,model_path,writer):  # noqa: E501
 
     # best_iou_score = 0.0
     train_logs_list, valid_logs_list = [], []
@@ -109,13 +114,21 @@ def train_model(
         # Perform training & validation
         print("\nEpoch: {}".format(i))
         train_logs = train_epoch.run(train_loader)
-        valid_logs = valid_epoch.run(valid_loader)
         train_logs_list.append(train_logs)
+
+        valid_logs = valid_epoch.run(valid_loader)
         valid_logs_list.append(valid_logs)
+        writer.add_scalar("Train_Loss",train_logs['dice_loss'],i)
+        writer.add_scalar("Train_IOU", train_logs['iou_score'],i)
+        writer.add_scalar("Valid_Loss", valid_logs['dice_loss'], i)
+        writer.add_scalar("Valid_IOU", valid_logs['iou_score'], i)
+    writer.flush()
+    writer.close()
+
 
     # torch.save(model,
     # './DeepLab_model_1channel_mask_andrey_dataset.pth')  # save weights
-
+    model_path=model_path+"/Deep_Lab_" + str(valid_logs_list[-1]['dice_loss'])+'.onnx'
     # save if onnx
     model.eval()
     # model.to("cpu")
@@ -126,7 +139,7 @@ def train_model(
     torch.onnx.export(
         model,
         dummy_input,
-        "Deep_Lab_test.onnx",
+        model_path,
         verbose=False,
         input_names=input_names,
         output_names=output_names,
@@ -134,6 +147,7 @@ def train_model(
         do_constant_folding=True,
         opset_version=11,
     )
+    return model_path
 
 
 def main():

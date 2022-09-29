@@ -12,7 +12,8 @@ dataset_version: 0.0.1
 lr: 0.001
 momentum: 0.9
 num_epochs: 1
+model_path: ../models
 
 # validation
-val_acc_threshold: 0.90
+val_iou_threshold: 0.90
 val_loss_threshold: 0.2
